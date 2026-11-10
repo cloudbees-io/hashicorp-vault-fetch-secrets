@@ -1,0 +1,156 @@
+= CloudBees action: Fetch secrets from HashiCorp Vault
+
+Use this action to fetch secrets from HashiCorp Vault, a tool that securely stores and retrieves sensitive information, such as passwords and API keys.
+Fetched secret output is masked in CloudBees platform and cannot be logged or accessed by background processes, so it can be used securely in a downstream step of the same job.
+
+NOTE: If you want to use the same secrets in another job, you must call the Vault action again in that job.
+
+== Inputs
+
+[cols="14%a,9%a,12%a,65%a",options="header"]
+.Input details
+|===
+
+| Input name
+| Data type
+| Required?
+| Description
+
+| `url`
+| String
+| Yes
+| The Vault server URL.
+
+| `method`
+| String
+| Yes
+| The authentication method to use: `approle` or `token`.
+
+| `roleId`
+| String
+| Required when `method` is `approle`
+| The AppRole role ID.
+
+| `secretId`
+| String
+| Required when `method` is `approle`
+| The AppRole secret ID.
+
+| `token`
+| String
+| Required when `method` is `token`
+| The Vault token to authenticate with.
+
+| `secrets`
+| String
+| Yes
+| A `;`-separated list of selectors in the form `<path> <field> \| <name>`, one per secret to fetch.
+
+| `mount`
+| String
+| No
+| The KV v2 mount path. Defaults to `secret`.
+
+| `namespace`
+| String
+| No
+| The Vault namespace (Vault Enterprise only).
+
+| `authPath`
+| String
+| No
+| A custom auth mount path, if the auth method is not mounted at its default path.
+
+| `ignoreNotFound`
+| Boolean
+| No
+| If `true`, skip a missing secret path instead of failing the step.
+
+|===
+
+== Output
+
+[cols="2a,2a,3a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+| `vault_output`
+| JSON string
+| A JSON map of every named selector in `secrets` to its resolved value.
+
+|===
+
+== Usage examples
+
+=== Basic example
+
+The following is a basic example of using this action:
+
+[source,yaml,role="default-expanded"]
+----
+
+    steps:
+      - name: Fetch secrets from Vault
+        uses: cloudbees-io/hashicorp-vault-fetch-secrets@v1
+        with:
+          url: ${{ vars.YOUR_VAULT_URL }}
+          method: approle
+          roleId: ${{ vars.YOUR_VAULT_ROLE_ID }}
+          secretId: ${{ secrets.YOUR_VAULT_SECRET_ID }}
+          secrets: secret/data/my-app db-password | db_password;secret/data/my-app api-key | api_key
+
+----
+
+=== Using the action output
+
+Access the `vault_output` values in downstream steps of the same job using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+Use the `vault_output` output for a single secret value as follows, where `<action_step_ID>` is the action step ID, and `<name>` is the name given to the selector in the `secrets` input:
+
+[source,yaml]
+----
+
+${{ fromJSON(steps.<action_step_ID>.outputs.vault_output).<name> }}
+
+----
+
+In the following example, the action output is used in a downstream step of the same job.
+
+NOTE: Each `echo` command outputs `***` in place of the secret, because the action masks all fetched secrets.
+
+[source,yaml,role="default-expanded"]
+----
+
+jobs:
+  use-vault-secrets:
+    steps:
+      - name: Fetch secrets from Vault
+        id: fetch-my-secrets
+        uses: cloudbees-io/hashicorp-vault-fetch-secrets@v1
+        with:
+          url: ${{ vars.YOUR_VAULT_URL }}
+          method: approle
+          roleId: ${{ vars.YOUR_VAULT_ROLE_ID }}
+          secretId: ${{ secrets.YOUR_VAULT_SECRET_ID }}
+          secrets: secret/data/my-app db-password | db_password;secret/data/my-app api-key | api_key
+
+      - name: Use fetched secrets
+        uses: docker://alpine:latest
+        shell: sh
+        run: |
+          echo "DB password is fetched but masked: ${{ fromJSON(steps.fetch-my-secrets.outputs.vault_output).db_password }}"
+          echo "API key is fetched but masked: ${{ fromJSON(steps.fetch-my-secrets.outputs.vault_output).api_key }}"
+
+----
+== License
+
+This code is made available under the
+link:https://opensource.org/license/mit/[MIT license].
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/actions[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].

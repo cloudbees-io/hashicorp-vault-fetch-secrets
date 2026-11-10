@@ -1,0 +1,69 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: fetch-vault-secrets
+description: "Fetch and mask secrets from HashiCorp Vault"
+
+inputs:
+  url:
+    description: "Vault server URL"
+    required: true
+  method:
+    description: "Auth method: approle or token"
+    required: true
+  roleId:
+    description: "AppRole role ID (required when method is approle)"
+    required: false
+  secretId:
+    description: "AppRole secret ID (required when method is approle)"
+    required: false
+  token:
+    description: "Vault token (required when method is token)"
+    required: false
+  secrets:
+    description: "';'-separated '<path> <field> | <name>' selectors"
+    required: true
+  mount:
+    description: "KV v2 mount path (defaults to 'secret')"
+    required: false
+  namespace:
+    description: "Vault namespace (Enterprise only)"
+    required: false
+  authPath:
+    description: "Custom auth mount path"
+    required: false
+  ignoreNotFound:
+    description: "Skip a missing secret path instead of failing the step"
+    required: false
+
+outputs:
+  vault_output:
+    description: "JSON map of every named selector to its resolved value"
+    value: ${{ steps.invoke-vault-action.outputs.vault_output_var }}
+
+runs:
+  using: composite
+  steps:
+    - id: invoke-vault-action
+      name: invoke-vault-action
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/hashicorp-vault-actions:main
+      shell: sh
+      env:
+        RUN_ID: ${{ cloudbees.run_id }}
+        JOB_ID: ${{ job.id }}
+        STEP_ID: ${{ step.internal.id }}
+        DNS_URL: ${{ cloudbees.api.url }}
+        JWT_TOKEN: ${{ cloudbees.api.token }}
+        VAULT_URL: ${{ inputs.url }}
+        VAULT_METHOD: ${{ inputs.method }}
+        VAULT_ROLE_ID: ${{ inputs.roleId }}
+        VAULT_SECRET_ID: ${{ inputs.secretId }}
+        VAULT_TOKEN_INPUT: ${{ inputs.token }}
+        VAULT_SECRETS: ${{ inputs.secrets }}
+        VAULT_MOUNT: ${{ inputs.mount }}
+        VAULT_NAMESPACE_INPUT: ${{ inputs.namespace }}
+        VAULT_AUTH_PATH: ${{ inputs.authPath }}
+        VAULT_IGNORE_NOT_FOUND: ${{ inputs.ignoreNotFound }}
+      run: |
+        set -x
+        cd /app
+        ./vault
