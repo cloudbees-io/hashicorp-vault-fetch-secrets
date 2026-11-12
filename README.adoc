@@ -64,7 +64,7 @@ NOTE: If you want to use the same secrets in another job, you must call the Vaul
 | `ignoreNotFound`
 | Boolean
 | No
-| If `true`, skip a missing secret path instead of failing the step.
+| If `true`, skip a selector whose secret *path* does not exist instead of failing the step. A selector whose path exists but is missing the requested *field* always fails the step, regardless of this setting.
 
 |===
 
