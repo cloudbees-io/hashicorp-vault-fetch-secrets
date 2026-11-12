@@ -20,11 +20,8 @@ inputs:
     description: "Vault token (required when method is token)"
     required: false
   secrets:
-    description: "';'-separated '<path> <field> | <name>' selectors"
+    description: "';'-separated '<path> <field> | <name>' selectors - path is the full Vault path, e.g. 'secret/data/app/db' (mount included), so selectors can span different mounts in one call"
     required: true
-  mount:
-    description: "KV v2 mount path (defaults to 'secret')"
-    required: false
   namespace:
     description: "Vault namespace (Enterprise only)"
     required: false
@@ -59,7 +56,6 @@ runs:
         VAULT_SECRET_ID: ${{ inputs.secretId }}
         VAULT_TOKEN_INPUT: ${{ inputs.token }}
         VAULT_SECRETS: ${{ inputs.secrets }}
-        VAULT_MOUNT: ${{ inputs.mount }}
         VAULT_NAMESPACE_INPUT: ${{ inputs.namespace }}
         VAULT_AUTH_PATH: ${{ inputs.authPath }}
         VAULT_IGNORE_NOT_FOUND: ${{ inputs.ignoreNotFound }}
