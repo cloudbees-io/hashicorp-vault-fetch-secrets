@@ -44,7 +44,7 @@ NOTE: If you want to use the same secrets in another job, you must call the Vaul
 | `secrets`
 | String
 | Yes
-| A `;`-separated list of selectors in the form `<path> <field> \| <name>`, one per secret to fetch. `path` is the full Vault path, mount included (e.g. `secret/data/my-app`) - a single call can mix selectors across different mounts.
+| A `;`-separated list of selectors in the form `<path> <field> \| <name>`, one per secret to fetch. `path` is the full Vault path, mount included (e.g. `secret/data/my-app` for KV v2 or `kv1-mount/my-app` for KV v1) - a single call can mix selectors across different mounts. The KV version is auto-detected per path from the response shape.
 
 | `namespace`
 | String
