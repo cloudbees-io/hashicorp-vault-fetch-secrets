@@ -20,7 +20,7 @@ inputs:
     description: "Vault token (required when method is token)"
     required: false
   secrets:
-    description: "';'-separated '<path> <field> | <name>' selectors - path is the full Vault path, e.g. 'secret/data/app/db' (mount included), so selectors can span different mounts in one call"
+    description: "';'-separated '<path> <field> | <name>' selectors - path is the full Vault path, e.g. 'secret/data/app/db' for KV v2 or 'kv1-mount/app/db' for KV v1 (mount included), so selectors can span different mounts in one call. The KV version is auto-detected per path from the response shape"
     required: true
   namespace:
     description: "Vault namespace (Enterprise only)"
