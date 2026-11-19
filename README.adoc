@@ -5,6 +5,8 @@ Fetched secret output is masked in CloudBees platform and cannot be logged or ac
 
 NOTE: If you want to use the same secrets in another job, you must call the Vault action again in that job.
 
+NOTE: The action masks the Vault token it authenticates with, but does not revoke it. A token you supply with the `token` input stays valid after the step. A token issued by an AppRole login expires according to its own TTL, so configure a short `token_ttl` on the role.
+
 == Inputs
 
 [cols="14%a,9%a,12%a,65%a",options="header"]
@@ -39,7 +41,7 @@ NOTE: If you want to use the same secrets in another job, you must call the Vaul
 | `token`
 | String
 | Required when `method` is `token`
-| The Vault token to authenticate with.
+| The Vault token to authenticate with. The action does not revoke this token.
 
 | `secrets`
 | String
