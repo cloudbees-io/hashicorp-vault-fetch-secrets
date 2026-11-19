@@ -42,7 +42,7 @@ runs:
   steps:
     - id: invoke-vault-action
       name: invoke-vault-action
-      uses: docker://public.ecr.aws/l7o7z1g8/actions/hashicorp-vault-actions:main-56785816af49327062a435ea6840f4845ff38eb8
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/hashicorp-vault-actions:main-125575a0b8817c89d225999c16456f0bde1ca682
       shell: sh
       env:
         RUN_ID: ${{ cloudbees.run_id }}
